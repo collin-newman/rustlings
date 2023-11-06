@@ -16,6 +16,7 @@
 
 // I AM NOT DONE
 
+use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 
 // A structure to store the goal details of a team.
@@ -39,6 +40,42 @@ fn build_scores_table(results: String) -> HashMap<String, Team> {
         // will be the number of goals conceded from team_2, and similarly
         // goals scored by team_2 will be the number of goals conceded by
         // team_1.
+        println!("{:?}", results);
+        let empty_entry = Team {
+            goals_scored: team_1_score.clone(),
+            goals_conceded: team_2_score.clone(),
+        };
+
+        let team_1_entry = match scores.entry(team_1_name.clone()) {
+            Occupied(entry) => {
+                let score = entry.get();
+
+                Team {
+                    goals_scored: team_1_score.clone() + score.goals_scored,
+                    goals_conceded: team_2_score.clone() + score.goals_conceded,
+                }
+            }
+            Vacant(_score) => empty_entry,
+        };
+        scores.insert(String::from(&team_1_name), team_1_entry);
+
+        let empty_entry_2 = Team {
+            goals_scored: team_2_score.clone(),
+            goals_conceded: team_1_score.clone(),
+        };
+
+        let team_2_entry = match scores.entry(team_2_name.clone()) {
+            Occupied(entry) => {
+                let score = entry.get();
+
+                Team {
+                    goals_scored: team_2_score + score.goals_scored,
+                    goals_conceded: team_1_score + score.goals_conceded,
+                }
+            }
+            Vacant(_score) => empty_entry_2,
+        };
+        scores.insert(String::from(&team_2_name), team_2_entry);
     }
     scores
 }
