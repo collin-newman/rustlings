@@ -14,15 +14,30 @@
 // Execute `rustlings hint hashmaps3` or use the `hint` watch subcommand for a
 // hint.
 
-// I AM NOT DONE
-
-use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::HashMap;
 
 // A structure to store the goal details of a team.
 struct Team {
     goals_scored: u8,
     goals_conceded: u8,
+}
+
+fn add_to_scores(
+    scores: &mut HashMap<String, Team>,
+    team_1_name: String,
+    team_1_score: u8,
+    team_2_score: u8,
+) {
+    scores
+        .entry(team_1_name)
+        .and_modify(|entry| {
+            entry.goals_scored = entry.goals_scored + team_1_score;
+            entry.goals_conceded = entry.goals_conceded + team_2_score;
+        })
+        .or_insert(Team {
+            goals_scored: team_1_score,
+            goals_conceded: team_2_score,
+        });
 }
 
 fn build_scores_table(results: String) -> HashMap<String, Team> {
@@ -40,42 +55,9 @@ fn build_scores_table(results: String) -> HashMap<String, Team> {
         // will be the number of goals conceded from team_2, and similarly
         // goals scored by team_2 will be the number of goals conceded by
         // team_1.
-        println!("{:?}", results);
-        let empty_entry = Team {
-            goals_scored: team_1_score.clone(),
-            goals_conceded: team_2_score.clone(),
-        };
 
-        let team_1_entry = match scores.entry(team_1_name.clone()) {
-            Occupied(entry) => {
-                let score = entry.get();
-
-                Team {
-                    goals_scored: team_1_score.clone() + score.goals_scored,
-                    goals_conceded: team_2_score.clone() + score.goals_conceded,
-                }
-            }
-            Vacant(_score) => empty_entry,
-        };
-        scores.insert(String::from(&team_1_name), team_1_entry);
-
-        let empty_entry_2 = Team {
-            goals_scored: team_2_score.clone(),
-            goals_conceded: team_1_score.clone(),
-        };
-
-        let team_2_entry = match scores.entry(team_2_name.clone()) {
-            Occupied(entry) => {
-                let score = entry.get();
-
-                Team {
-                    goals_scored: team_2_score + score.goals_scored,
-                    goals_conceded: team_1_score + score.goals_conceded,
-                }
-            }
-            Vacant(_score) => empty_entry_2,
-        };
-        scores.insert(String::from(&team_2_name), team_2_entry);
+        add_to_scores(&mut scores, team_1_name, team_1_score.clone(), team_2_score);
+        add_to_scores(&mut scores, team_2_name, team_2_score, team_1_score)
     }
     scores
 }
